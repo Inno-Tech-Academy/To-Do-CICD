@@ -1,44 +1,79 @@
 pipeline {
     agent any
+    tools {
+        nodejs 'NodeJS_20'
+    }
     environment {
-        EC2_IP = '52.90.8.67'
+        EC2_IP = '44.204.193.1'
         EC2_USER = 'ubuntu'
     }
-    
-
-
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/Inno-Tech-Academy/To-Do-CICD.git'
+                // Clone the repository
+                script {
+                    if (isUnix()) {
+                        sh 'git clone -b main https://github.com/Inno-Tech-Academy/To-Do-CICD.git'
+                    } else {
+                        bat 'git clone -b main https://github.com/Inno-Tech-Academy/To-Do-CICD.git'
+                    }
+                }
             }
-
         }
-        stage ('Build') {
+        stage('Build') {
             steps {
-                bat '''
-                cd todo
-                npm install
-                npm run build
-                '''
+                script {
+                    if (isUnix()) {
+                        sh '''
+                        cd todo
+                        npm install
+                        npm run build                        '''
+                    } else {
+                        bat '''
+                        cd todo
+                        npm install
+                        npm run build
+                        '''
+                    }
+                }
             }
         }
         stage('Deploy') {
             steps {
                 sshagent(['credential-id']) {
-                    bat """
-                    scp -r todo/build ${EC2_USER}@${EC2_IP}:/home/${EC2_USER}/react-app
-                    ssh ${EC2_USER}@${EC2_IP} << EOF
-                    sudo rm -rf /var/www/html/*
-                    sudo cp -r /home/${EC2_USER}/react-app/* /var/www/html/
-                    sudo systemctl restart nginx
-                    EOF
-                    """
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                            # Ensure target directories exist on EC2
+                            ssh ${EC2_USER}@${EC2_IP} "mkdir -p /home/ubuntu/react-app"
+
+                            # Copy the deploy.sh file to EC2
+                            scp deploy.sh ${EC2_USER}@${EC2_IP}:/home/${EC2_USER}/deploy.sh
+
+                            # Copy the build folder to EC2
+                            scp -r todo/build ${EC2_USER}@${EC2_IP}:/home/${EC2_USER}/react-app
+
+                            # Run the deploy.sh script on EC2
+                            ssh ${EC2_USER}@${EC2_IP} "bash /home/${EC2_USER}/deploy.sh"
+                            '''
+                        } else {
+                            bat '''
+                            REM Ensure target directories exist on EC2
+                            powershell ssh ${EC2_USER}@${EC2_IP} "mkdir -p /home/ubuntu/react-app"
+
+                            REM Copy the deploy.sh file to EC2
+                            powershell scp deploy.sh ${EC2_USER}@${EC2_IP}:/home/${EC2_USER}/deploy.sh
+
+                            REM Copy the build folder to EC2
+                            powershell scp -r todo/build ${EC2_USER}@${EC2_IP}:/home/${EC2_USER}/react-app
+
+                            REM Run the deploy.sh script on EC2
+                            powershell ssh ${EC2_USER}@${EC2_IP} "bash /home/${EC2_USER}/deploy.sh"
+                            '''
+                        }
+                    }
                 }
-
-
             }
         }
     }
 }
-
