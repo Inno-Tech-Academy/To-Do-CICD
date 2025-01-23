@@ -8,6 +8,10 @@ pipeline {
         EC2_USER = 'ubuntu'
     }
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
         stage('Checkout') {
             steps {
                 // Clone the repository
