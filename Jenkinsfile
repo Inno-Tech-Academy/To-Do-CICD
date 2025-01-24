@@ -28,23 +28,31 @@ pipeline {
         }
 
         stage('Build') {
-            steps {
-                script {
-                    if (isUnix()) {
-                        sh '''
-                        cd todo
-                        npm install
-                        npm run build                        '''
-                    } else {
-                        bat '''
-                        cd todo
-                        npm install
-                        npm run build
-                        '''
-                    }
-                }
+    steps {
+        script {
+            if (isUnix()) {
+                sh '''
+                echo "Listing contents of workspace"
+                ls -la  # List workspace contents
+                ls -la todo  # List contents of 'todo' directory to confirm it exists
+                cd todo
+                npm install
+                npm run build
+                '''
+            } else {
+                bat '''
+                echo "Listing contents of workspace"
+                dir  # List workspace contents
+                dir todo  # List contents of 'todo' directory to confirm it exists
+                cd todo
+                npm install
+                npm run build
+                '''
             }
         }
+    }
+}
+
         stage('Deploy') {
             steps {
                 sshagent(['credential-id']) {
