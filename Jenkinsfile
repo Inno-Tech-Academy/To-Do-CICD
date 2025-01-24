@@ -15,17 +15,18 @@ pipeline {
         }
 
         stage('Checkout') {
-            steps {
-                // Clone the repository
-                script {
-                    if (isUnix()) {
-                        sh 'git clone -b main https://github.com/Inno-Tech-Academy/To-Do-CICD.git'
-                    } else {
-                        bat 'git clone -b main https://github.com/Inno-Tech-Academy/To-Do-CICD.git'
-                    }
-                }
-            }
+    steps {
+        script {
+            echo "Cloning repository..."
+            git 'https://github.com/Inno-Tech-Academy/To-Do-CICD.git'
+
+            // List the contents of the workspace to verify cloning
+            bat 'dir'  // List files in workspace
+            bat 'dir todo'  // List files inside the 'todo' directory (if it exists)
         }
+    }
+}
+
         stage('Build') {
             steps {
                 script {
