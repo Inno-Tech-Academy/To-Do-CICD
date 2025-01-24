@@ -13,6 +13,7 @@ pipeline {
                 cleanWs()
             }
         }
+
         stage('Checkout') {
             steps {
                 // Clone the repository
