@@ -4,7 +4,7 @@ pipeline {
         nodejs 'NodeJS_20'
     }
     environment {
-        EC2_IP = '44.204.193.1'
+        EC2_IP = '35.173.244.198'
         EC2_USER = 'ubuntu'
     }
     stages {
@@ -36,11 +36,12 @@ pipeline {
                         npm install
                         npm run build                        '''
                     } else {
-                        bat '''
-                        cd todo
-                        npm install
-                        npm run build
-                        '''
+                bat '''
+                cd ${WORKSPACE}\\todo
+                npm install
+                npm run build
+                '''
+            }
                     }
                 }
             }
